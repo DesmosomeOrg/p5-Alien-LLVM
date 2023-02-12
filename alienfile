@@ -1,0 +1,23 @@
+use alienfile;
+
+# replace this with your own system probe.
+# See Alien::Build::Plugin::Probe and
+# Alien::Build::Plugin::PkgConfig for common
+# probe plugins.
+probe sub { 'share' };
+
+share {
+  start_url 'https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7';
+  plugin Download => (
+    filter  => qr/^llvm.*tar\.xz$/,
+    version => qr/([0-9\.]+)/,
+  );
+  plugin Extract => 'tar.xz';
+  plugin 'Build::CMake';
+  build [
+    ['%{cmake}', @{ meta->prop->{plugin_build_cmake}->{args} }, '%{.install.extract}'],
+    '%{make}',
+    '%{make} install',
+  ];
+  plugin 'Gather::IsolateDynamic';
+}
