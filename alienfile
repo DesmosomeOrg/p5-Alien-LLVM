@@ -1,18 +1,22 @@
 use alienfile;
 
-# replace this with your own system probe.
-# See Alien::Build::Plugin::Probe and
-# Alien::Build::Plugin::PkgConfig for common
-# probe plugins.
-probe sub { 'share' };
+use File::Which qw(which);
 
-share {
-  start_url 'https://github.com/llvm/llvm-project/releases/download/llvmorg-15.0.7';
-  plugin Download => (
-    filter  => qr/^llvm.*tar\.xz$/,
-    version => qr/([0-9\.]+)/,
+my $MAX_VERSION = 15;
+for my $command (qw(llvm-ar), ( map "llvm-ar-$_", reverse 12..$MAX_VERSION) ) {
+  next unless which($command);
+  plugin 'Probe::CommandLine' => (
+    command   => $command,
+    args      => [ '--version' ],
+    version => qr/LLVM version ([0-9\.]+)/,
   );
-  plugin Extract => 'tar.xz';
+}
+
+sub do_source {
+  plugin 'Download::GitHub' => (
+    github_user => 'llvm',
+    github_repo => 'llvm-project',
+  );
   plugin 'Build::CMake';
   build [
     ['%{cmake}', @{ meta->prop->{plugin_build_cmake}->{args} }, '%{.install.extract}'],
@@ -20,4 +24,12 @@ share {
     '%{make} install',
   ];
   plugin 'Gather::IsolateDynamic';
+  after gather => sub {
+    my ($build) = @_;
+    $build->runtime_prop->{'style'} = 'source';
+  };
+}
+
+share {
+  do_source;
 }
