@@ -3,6 +3,7 @@ use alienfile;
 use File::Which qw(which);
 
 my $MAX_VERSION = 15;
+my $probe = 0;
 for my $command (qw(llvm-ar), ( map "llvm-ar-$_", reverse 12..$MAX_VERSION) ) {
   next unless which($command);
   plugin 'Probe::CommandLine' => (
@@ -10,6 +11,11 @@ for my $command (qw(llvm-ar), ( map "llvm-ar-$_", reverse 12..$MAX_VERSION) ) {
     args      => [ '--version' ],
     version => qr/LLVM version ([0-9\.]+)/,
   );
+  $probe = 1;
+}
+
+unless( $probe ) {
+  probe sub { 'share' };
 }
 
 sub do_source {
