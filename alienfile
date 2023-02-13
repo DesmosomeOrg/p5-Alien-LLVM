@@ -13,13 +13,29 @@ for my $command (qw(llvm-ar), ( map "llvm-ar-$_", reverse 12..$MAX_VERSION) ) {
 }
 
 sub do_source {
+  my $ALLOW_RC = 0;
+  # TODO make this an env variable.
+  # if unset, do not include releases with the -rc suffix (release candidates)
+  my $rc_part_qr = $ALLOW_RC ? qr/(?:rc\d+)?/ : qr// ;
+
   plugin 'Download::GitHub' => (
     github_user => 'llvm',
     github_repo => 'llvm-project',
+    asset        => 1,
+    asset_name   => qr/llvm-project-([0-9\.]+$rc_part_qr)\.src\.tar\.xz$/,
+    asset_format => 'tar.xz',
   );
   plugin 'Build::CMake';
+  # TODO compare with <https://github.com/ycm-core/llvm/blob/708056a3d8259ce1d9fc0f15676d13b53cc23835/package_llvm.py#L202>.
+  # May need to expand to include more such as mlir and
+  # flang <https://github.com/llvm/llvm-project/tree/main/flang>
   build [
-    ['%{cmake}', @{ meta->prop->{plugin_build_cmake}->{args} }, '%{.install.extract}'],
+    ['%{cmake}',
+      @{ meta->prop->{plugin_build_cmake}->{args} },
+      '-DCMAKE_BUILD_TYPE=Release',
+      # Build just these projects for now. Need to see if more should be the default.
+      '-DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra',
+      '%{.install.extract}/llvm'],
     '%{make}',
     '%{make} install',
   ];
