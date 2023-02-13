@@ -48,4 +48,8 @@ sub do_source {
 
 share {
   do_source;
+  # TODO
+  # - Add support for binary releases on Windows and macOS. Need to check which
+  #   projects are enabled in those builds. In the case of Windows, the
+  #   CPack-built NSIS installer file can be extracted using 7-zip (via Alien::7zip).
 }
