@@ -41,6 +41,11 @@ sub do_source {
       '-DCMAKE_BUILD_TYPE=Release',
       # Build just these projects for now. Need to see if more should be the default.
       '-DLLVM_ENABLE_PROJECTS=clang;clang-tools-extra',
+      (
+        which('ccache')
+        ? ( '-DLLVM_CCACHE_BUILD=ON' )
+        : ()
+      ),
       '%{.install.extract}/llvm'],
     '%{make}',
     '%{make} install',
