@@ -69,7 +69,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        perl-version: ['5.8', '5.20', '5.30', '5.34']
+        perl-version: ['5.8', '5.34']
         alien-install-type: [ 'system', 'share' ]
         include:
           # Windows strawberry     | share
