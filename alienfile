@@ -24,8 +24,6 @@ sub do_source {
   # if unset, do not include releases with the -rc suffix (release candidates)
   my $rc_part_qr = $ALLOW_RC ? qr/(?:rc\d+)?/ : qr// ;
 
-  die "Not building LLVM from source at this time as this takes too long."
-    if $ENV{AUTOMATED_TESTING} || $ENV{CI};
 
   plugin 'Download::GitHub' => (
     github_user => 'llvm',
@@ -39,6 +37,10 @@ sub do_source {
   # May need to expand to include more such as mlir and
   # flang <https://github.com/llvm/llvm-project/tree/main/flang>
   build [
+    sub {
+      die "Not building LLVM from source at this time as this takes too long."
+        if $ENV{AUTOMATED_TESTING} || $ENV{CI};
+    },
     ['%{cmake}',
       @{ meta->prop->{plugin_build_cmake}->{args} },
       '-DCMAKE_BUILD_TYPE=Release',
