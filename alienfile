@@ -24,6 +24,9 @@ sub do_source {
   # if unset, do not include releases with the -rc suffix (release candidates)
   my $rc_part_qr = $ALLOW_RC ? qr/(?:rc\d+)?/ : qr// ;
 
+  die "Not building LLVM from source at this time as this takes too long."
+    if $ENV{AUTOMATED_TESTING} || $ENV{CI};
+
   plugin 'Download::GitHub' => (
     github_user => 'llvm',
     github_repo => 'llvm-project',
